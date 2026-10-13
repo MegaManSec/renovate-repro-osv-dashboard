@@ -1,7 +1,7 @@
 {
   "name": "case-5-lockfile-only-update",
   "private": true,
-  "packageManager": "pnpm@10.6.4",
+  "packageManager": "pnpm@10.34.5",
   "dependencies": {
     "js-yaml": "^4.1.0"
   }
