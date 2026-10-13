@@ -1,0 +1,7 @@
+{
+  "name": "case-2-legacy",
+  "private": true,
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}
