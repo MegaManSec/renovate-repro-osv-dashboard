@@ -24,9 +24,9 @@ importer locks the lowest version its range allows (vitest 3.2.4 and 4.1.4, js-y
 Cases 1 to 3 use OSV data (`osvVulnerabilityAlerts`). Each case gets its own branch through
 `vulnerabilityAlerts.groupName: "{{{parentDir}}} security"`.
 
-The "current behavior" below is what Renovate 44.117.2 did in a private monorepo with the same
-shape, and what our reading of the code on `main` predicts. It has not yet been run on this
-repository.
+<!-- Replaces the README paragraph that starts 'The "current behavior" below is what Renovate 44.117.2 did' and ends 'It has not yet been run on this repository.' Suggested commit message: "Record the first Renovate run". -->
+
+The "current behavior" below is what Renovate 44.117.2 did in a private monorepo with the same shape. The Mend-hosted app (Renovate 44.155.2) first ran on this repository on 2026-10-13, after the lockfile workflow committed the lockfiles, and produced the [Dependency Dashboard](https://github.com/MegaManSec/renovate-repro-osv-dashboard/issues/8), which has no "Pending Status Checks" section. Case 1: [#6](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/6) changes `^3.2.4` to `^4.0.0` and locks the root importer at `4.1.4(vite@7.3.7)`; [#5](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/5), on the case's group branch, only updates `packageManager`. Case 2: [#1](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/1) locks `legacy` (`specifier: ^3.2.4`) at `4.1.11(vite@7.3.7)`. Case 3: [#3](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/3) updates `lodash` only, and the dashboard shows `next 15.5.18` → `[Updates: 15.5.27]` under Detected Dependencies without saying it is held. Case 4: `cases/4-skipped-only-package-file/package.json` is an empty block under Detected Dependencies. Case 5: the row reads `js-yaml ^4.1.0` → `[Updates: ^4.1.0]`, while [#2](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/2) locks js-yaml 4.3.2. Case 6: [#4](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/4) links `https://renovatebot.com/diffs/npm/vitest@>2.1.9 <=3.1.2>vite/6.2.5/6.4.3`. [#7](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/7) (vitest v4 for case 6) and the rate-limited `ubuntu` update are side effects, not cases.
 
 ### Case 1: `cases/1-vulnerability-range-floor`
 
