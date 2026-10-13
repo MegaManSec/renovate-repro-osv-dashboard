@@ -3,5 +3,29 @@
   "extends": ["config:recommended"],
   "osvVulnerabilityAlerts": true,
   "dependencyDashboard": true,
-  "dependencyDashboardOSVVulnerabilitySummary": "all"
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**",
+    "cases/1-vulnerability-range-floor/other/**",
+    "cases/2-lockfile-update-other-importers/legacy/**"
+  ],
+  "packageRules": [
+    {
+      "description": "Security updates only for the cases/ directories",
+      "matchFileNames": ["cases/**"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "groupName": "{{{parentDir}}} security",
+    "minimumReleaseAge": "45 days"
+  }
 }

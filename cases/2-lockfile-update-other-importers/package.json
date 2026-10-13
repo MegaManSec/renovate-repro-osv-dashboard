@@ -1,0 +1,8 @@
+{
+  "name": "case-2-lockfile-update-other-importers",
+  "private": true,
+  "packageManager": "pnpm@10.6.4",
+  "devDependencies": {
+    "vitest": "^4.1.4"
+  }
+}
