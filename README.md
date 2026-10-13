@@ -17,12 +17,11 @@ findings above: the `ignorePaths` list repeats the `config:recommended` defaults
 only matches `cases/**`, and the root package file has no fixable advisory.
 
 Run the **Generate pnpm lockfiles** workflow (Actions tab, `workflow_dispatch`) once before running
-Renovate. It writes `pnpm-lock.yaml` for cases 1 and 2 with `resolution-mode=lowest-direct`, so each
-importer locks the lowest version its range allows (vitest 3.2.4 and 4.1.4). Renovate only uses
-`update-lockfile` for vulnerability alerts when a locked version exists, so these cases need the
-lockfile.
+Renovate. It writes `pnpm-lock.yaml` for cases 1, 2 and 5 with `resolution-mode=lowest-direct`, so each
+importer locks the lowest version its range allows (vitest 3.2.4 and 4.1.4, js-yaml 4.1.0). Renovate only uses
+`update-lockfile` when a locked version exists, so these cases need the lockfile.
 
-All three cases use OSV data (`osvVulnerabilityAlerts`). Each case gets its own branch through
+Cases 1 to 3 use OSV data (`osvVulnerabilityAlerts`). Each case gets its own branch through
 `vulnerabilityAlerts.groupName: "{{{parentDir}}} security"`.
 
 The "current behavior" below is what Renovate 44.117.2 did in a private monorepo with the same
@@ -78,3 +77,52 @@ advisories and passes the age check.
 
 Expected behavior: the held `next` update is shown on the dashboard with the release it waits
 for. For the fix target, see the linked idea discussion.
+
+### Case 4: `cases/4-skipped-only-package-file`
+
+PR: https://github.com/renovatebot/renovate/pull/47005
+
+`package.json` has one dependency, `"sibling": "file:./sibling"`, which npm extraction marks with
+`skipReason: file`. `sibling/` only exists so that the path resolves, and is excluded with
+`ignorePaths`.
+
+Current behavior: Detected dependencies hides the skipped dependency but still lists the package
+file. Under `npm`, `cases/4-skipped-only-package-file/package.json` is an empty `<details>` block,
+and it is counted in `npm (N)`.
+
+Expected behavior: the package file is not listed, and `npm (N)` equals the number of package files
+shown under it.
+
+### Case 5: `cases/5-lockfile-only-update`
+
+PR: https://github.com/renovatebot/renovate/pull/47006
+
+`package.json` declares `js-yaml: ^4.1.0`, locked at 4.1.0 by the lockfile workflow. The Detected
+dependencies row only shows updates when one exists, so a package rule enables routine updates for
+this dependency, with `rangeStrategy: "update-lockfile"`. The update keeps `^4.1.0` as its
+`newValue` and only changes the lockfile. js-yaml 4.1.0 is also affected by OSV advisories (the
+newest fix is 4.3.2), so the update may come from the vulnerability alert instead; its default
+`rangeStrategy` is also `update-lockfile`, and the row is the same.
+
+Current behavior: the row reads `js-yaml ^4.1.0 → [Updates: ^4.1.0]`, the range that is already
+there.
+
+Expected behavior: the row shows the new locked version, for example
+`js-yaml ^4.1.0 → [Updates: lock file @ 4.3.2]`.
+
+### Case 6: `cases/6-pnpm-override-selector`
+
+PR: https://github.com/renovatebot/renovate/pull/47007
+
+`package.json` has the `pnpm.overrides` selector `vitest@>2.1.9 <=3.1.2>vite: 6.2.5`. Extraction
+keeps the selector as `depName` and sets `packageName: vite` for the lookup. No lockfile is needed:
+the Detected dependencies list shows the selector as the dependency name. vite 6.2.5 is affected by
+OSV advisories, so the case's security group should also get a PR that updates the override.
+
+Current behavior: in any PR that updates the override, the Change column of the PR body links to
+`https://renovatebot.com/diffs/npm/vitest@>2.1.9 <=3.1.2>vite/6.2.5/<new>`, which contains the whole
+selector (including spaces) and does not resolve.
+
+Expected behavior: the link uses the looked up package,
+`https://renovatebot.com/diffs/npm/vite/6.2.5/<new>`. The selector stays the dependency name in the
+dashboard, branch names and `matchDepNames`.
