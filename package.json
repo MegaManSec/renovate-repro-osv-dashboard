@@ -1,0 +1,8 @@
+{
+  "name": "renovate-repro-osv-dashboard",
+  "private": true,
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "lodash.pick": "^4.4.0"
+  }
+}
