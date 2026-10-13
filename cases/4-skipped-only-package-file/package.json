@@ -1,0 +1,7 @@
+{
+  "name": "case-4-skipped-only-package-file",
+  "private": true,
+  "dependencies": {
+    "sibling": "file:./sibling"
+  }
+}

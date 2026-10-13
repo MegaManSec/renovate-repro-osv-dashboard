@@ -19,7 +19,7 @@ jobs:
           node --version
           corepack --version
           corepack enable
-          for dir in cases/1-vulnerability-range-floor cases/2-lockfile-update-other-importers; do
+          for dir in cases/1-vulnerability-range-floor cases/2-lockfile-update-other-importers cases/5-lockfile-only-update; do
             (
               cd "$dir"
               printf 'resolution-mode=lowest-direct\n' > .npmrc
@@ -36,5 +36,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add cases/*/pnpm-lock.yaml
           git diff --cached --quiet && exit 0
-          git commit -m 'Add pnpm lockfiles for cases 1 and 2'
+          git commit -m 'Add pnpm lockfiles for cases 1, 2 and 5'
           git push origin HEAD:main

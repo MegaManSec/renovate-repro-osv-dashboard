@@ -14,13 +14,22 @@
     "**/tests/**",
     "**/__fixtures__/**",
     "cases/1-vulnerability-range-floor/other/**",
-    "cases/2-lockfile-update-other-importers/legacy/**"
+    "cases/2-lockfile-update-other-importers/legacy/**",
+    "cases/4-skipped-only-package-file/sibling/**"
   ],
   "packageRules": [
     {
       "description": "Security updates only for the cases/ directories",
       "matchFileNames": ["cases/**"],
       "enabled": false
+    },
+    {
+      "description": "Routine lockfile-only updates for js-yaml in case 5",
+      "matchFileNames": ["cases/5-lockfile-only-update/package.json"],
+      "matchDepNames": ["js-yaml"],
+      "enabled": true,
+      "rangeStrategy": "update-lockfile",
+      "groupName": "5-lockfile-only-update"
     }
   ],
   "vulnerabilityAlerts": {
