@@ -17,12 +17,13 @@ findings above: the `ignorePaths` list repeats the `config:recommended` defaults
 only matches `cases/**`, and the root package file has no fixable advisory.
 
 Run the **Generate pnpm lockfiles** workflow (Actions tab, `workflow_dispatch`) once before running
-Renovate. It writes `pnpm-lock.yaml` for cases 1, 2 and 5 with `resolution-mode=lowest-direct`, so each
+Renovate. It writes `pnpm-lock.yaml` for cases 1, 2, 5 and 7 with `resolution-mode=lowest-direct`, so each
 importer locks the lowest version its range allows (vitest 3.2.4 and 4.1.4, js-yaml 4.1.0). Renovate only uses
-`update-lockfile` when a locked version exists, so these cases need the lockfile.
+`update-lockfile` when a locked version exists, so these cases need the lockfile. Case 7 needs it for the
+nested `ws` and `minimatch` copies that Dependabot alerts on.
 
-Cases 1 to 3 use OSV data (`osvVulnerabilityAlerts`). Each case gets its own branch through
-`vulnerabilityAlerts.groupName: "{{{parentDir}}} security"`.
+Cases 1 to 3 use OSV data (`osvVulnerabilityAlerts`) and case 7 uses Dependabot alerts. Each case gets
+its own branch through `vulnerabilityAlerts.groupName: "{{{parentDir}}} security"`.
 
 The "current behavior" below is what Renovate 44.117.2 did in a private monorepo with the same shape. The Mend-hosted app (Renovate 44.155.2) first ran on this repository on 2026-10-13, after the lockfile workflow committed the lockfiles, and produced the [Dependency Dashboard](https://github.com/MegaManSec/renovate-repro-osv-dashboard/issues/8), which has no "Pending Status Checks" section. Case 1: [#6](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/6) changes `^3.2.4` to `^4.0.0` and locks the root importer at `4.1.4(vite@7.3.7)`; [#5](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/5), on the case's group branch, only updates `packageManager`. Case 2: [#1](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/1) locks `legacy` (`specifier: ^3.2.4`) at `4.1.11(vite@7.3.7)`. Case 3: [#3](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/3) updates `lodash` only, and the dashboard shows `next 15.5.18` → `[Updates: 15.5.27]` under Detected Dependencies without saying it is held. Case 4: `cases/4-skipped-only-package-file/package.json` is an empty block under Detected Dependencies. Case 5: the row reads `js-yaml ^4.1.0` → `[Updates: ^4.1.0]`, while [#2](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/2) locks js-yaml 4.3.2. Case 6: [#4](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/4) links `https://renovatebot.com/diffs/npm/vitest@>2.1.9 <=3.1.2>vite/6.2.5/6.4.3`. [#7](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/7) (vitest v4 for case 6) and the rate-limited `ubuntu` update are side effects, not cases.
 
@@ -124,3 +125,33 @@ selector (including spaces) and does not resolve.
 Expected behavior: the link uses the looked up package,
 `https://renovatebot.com/diffs/npm/vite/6.2.5/<new>`. The selector stays the dependency name in the
 dashboard, branch names and `matchDepNames`.
+
+### Case 7: `cases/7-alerts-per-range`
+
+PR: https://github.com/renovatebot/renovate/pull/47125 (discussion:
+https://github.com/renovatebot/renovate/discussions/47122)
+
+`package.json` declares `ws: 7.5.10` and `minimatch: 3.1.5`, and two parents that pull in newer
+majors of both: `engine.io-client` 6.6.3 (`ws: ~8.17.1`, locked 8.17.1) and
+`@typescript-eslint/typescript-estree` 6.21.0 (`minimatch: 9.0.3`). No other case has `ws` or
+`minimatch`. This case needs Dependabot alerts enabled on the repository.
+
+Expected Dependabot alerts, from the GitHub Advisory Database:
+
+- `ws` 7.5.10: GHSA-96hv-2xvq-fx4p (`>= 7.0.0, < 7.5.11`, fixed in 7.5.11)
+- `ws` 8.17.1: GHSA-96hv-2xvq-fx4p (`>= 8.0.0, < 8.21.0`, fixed in 8.21.0) and GHSA-58qx-3vcg-4xpx
+  (fixed in 8.20.1)
+- `minimatch` 9.0.3: GHSA-3ppc-4f35-3m26 (fixed in 9.0.6), GHSA-7r86-cg39-jmmj and
+  GHSA-23c5-xmqv-rm74 (fixed in 9.0.7)
+- `minimatch` 3.1.5: none (the 3.x fixes are 3.1.3 and 3.1.4)
+
+Current behavior: Renovate combines the alerts per package name and keeps the highest fix, so the
+debug log entry `alert package rules` has one rule per package: `ws` with
+`matchCurrentVersion: "< 8.21.0"` and `minimatch` with `matchCurrentVersion: "< 9.0.7"`. The
+`7-alerts-per-range security` PR moves the direct `ws` 7.5.10 to 8.21.0, and the direct `minimatch`
+3.1.5, which no alert affects, to 9.0.7. The root `osvVulnerabilityAlerts` does not change this: OSV
+has no advisory for `minimatch` 3.1.5, and for `ws` the alert rule's `vulnerabilityFixVersion: 8.21.0`
+still sets the target.
+
+Expected behavior: one rule per vulnerable range. The direct `ws` 7.5.10 only matches the 7.x range
+and moves to 7.5.11. `minimatch` 3.1.5 matches no range and is not updated.
