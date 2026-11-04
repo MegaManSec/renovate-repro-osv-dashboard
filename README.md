@@ -44,7 +44,8 @@ what `vulnerabilityAlerts.rangeStrategy: "bump"` produces.
 
 ### Case 2: `cases/2-lockfile-update-other-importers`
 
-Discussion: (link to be added)
+PR: https://github.com/renovatebot/renovate/pull/47742 (discussion:
+https://github.com/renovatebot/renovate/discussions/47010)
 
 The workspace root declares `vitest: ^4.1.4` (locked 4.1.4), affected by GHSA-82fw-gwwq-j7x9 with
 the fix 4.1.11 inside its range. `legacy/` declares `vitest: ^3.2.4` (locked 3.2.4) and is excluded
