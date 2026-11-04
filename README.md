@@ -22,7 +22,7 @@ importer locks the lowest version its range allows (vitest 3.2.4 and 4.1.4, js-y
 `update-lockfile` when a locked version exists, so these cases need the lockfile. Case 7 needs it for the
 nested `ws` and `minimatch` copies that Dependabot alerts on.
 
-Cases 1 to 3 use OSV data (`osvVulnerabilityAlerts`) and case 7 uses Dependabot alerts. Each case gets
+Cases 1 to 3 and 8 use OSV data (`osvVulnerabilityAlerts`) and case 7 uses Dependabot alerts. Each case gets
 its own branch through `vulnerabilityAlerts.groupName: "{{{parentDir}}} security"`.
 
 The "current behavior" below is what Renovate 44.117.2 did in a private monorepo with the same shape. The Mend-hosted app (Renovate 44.155.2) first ran on this repository on 2026-10-13, after the lockfile workflow committed the lockfiles, and produced the [Dependency Dashboard](https://github.com/MegaManSec/renovate-repro-osv-dashboard/issues/8), which has no "Pending Status Checks" section. Case 1: [#6](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/6) changes `^3.2.4` to `^4.0.0` and locks the root importer at `4.1.4(vite@7.3.7)`; [#5](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/5), on the case's group branch, only updates `packageManager`. Case 2: [#1](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/1) locks `legacy` (`specifier: ^3.2.4`) at `4.1.11(vite@7.3.7)`. Case 3: [#3](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/3) updates `lodash` only, and the dashboard shows `next 15.5.18` → `[Updates: 15.5.27]` under Detected Dependencies without saying it is held. Case 4: `cases/4-skipped-only-package-file/package.json` is an empty block under Detected Dependencies. Case 5: the row reads `js-yaml ^4.1.0` → `[Updates: ^4.1.0]`, while [#2](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/2) locks js-yaml 4.3.2. Case 6: [#4](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/4) links `https://renovatebot.com/diffs/npm/vitest@>2.1.9 <=3.1.2>vite/6.2.5/6.4.3`. [#7](https://github.com/MegaManSec/renovate-repro-osv-dashboard/pull/7) (vitest v4 for case 6) and the rate-limited `ubuntu` update are side effects, not cases.
@@ -155,3 +155,18 @@ still sets the target.
 
 Expected behavior: one rule per vulnerable range. The direct `ws` 7.5.10 only matches the 7.x range
 and moves to 7.5.11. `minimatch` 3.1.5 matches no range and is not updated.
+
+### Case 8: `cases/8-fix-version-vulnerable`
+
+PR: https://github.com/renovatebot/renovate/pull/47741 (discussion:
+https://github.com/renovatebot/renovate/discussions/47535)
+
+`package.json` declares `tmp: 0.0.28`. tmp 0.0.28 is affected by GHSA-52f5-9888-hmc6 (fixed in
+0.2.4) and GHSA-ph9p-34f9-6g65 (fixed in 0.2.6). 0.2.6 is the one release affected by
+GHSA-7c78-jf6q-g5cm (HIGH, fixed in 0.2.7, released 2026-05-27). No lockfile is needed.
+
+Current behavior: the `8-fix-version-vulnerable security` PR moves `tmp` to 0.2.6, the lowest
+version that fixes the two advisories on 0.0.28, and does not mention GHSA-7c78-jf6q-g5cm. A
+dependency review of that PR fails on the version it proposes.
+
+Expected behavior: the PR moves `tmp` to 0.2.7 and lists all three advisories.

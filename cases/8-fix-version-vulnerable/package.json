@@ -1,0 +1,7 @@
+{
+  "name": "case-8-fix-version-vulnerable",
+  "private": true,
+  "dependencies": {
+    "tmp": "0.0.28"
+  }
+}
