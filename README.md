@@ -58,7 +58,9 @@ Expected behavior: only importers whose range admits 4.1.11 change; `legacy` kee
 
 ### Case 3: `cases/3-held-group-member`
 
-Discussions: (links to be added, one for the dashboard and one for the fix target)
+PRs: https://github.com/renovatebot/renovate/pull/47124 (dashboard; discussion
+https://github.com/renovatebot/renovate/discussions/47011) and https://github.com/renovatebot/renovate/pull/47743 (fix target;
+discussion https://github.com/renovatebot/renovate/discussions/47012)
 
 `next` 15.5.18 is affected by 12 advisories. Two CRITICAL ones (GHSA-2xp9-vwfh-vxw4,
 GHSA-p293-qw3h-jr36) are fixed in 15.5.24 (2026-08-25); the newest two (GHSA-4jqv-mc3x-m676,
